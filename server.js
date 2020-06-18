@@ -20,7 +20,7 @@ connection.connect(err => {
         console.error("error connecting: " + err.stack);
         return;
     }
-    // console.log("connected as id " + connection.threadId);
+    init();
 });
 
 async function init() {
@@ -45,16 +45,20 @@ async function init() {
             case "View departments":
                 viewDepartments();
                 break;
+            case "Quit":
+                return console.log("Goodbye.");
         }
     } catch(err) { console.log(err); }
 }
 
-init();
-
 addNewEmployee = () => {
     connection.query("SELECT * FROM roles", (err, res) => {
-        console.log(res);
-        const currentRoles = res.map((role) => role.title);
+        let currentRoles = res.map((role) => role.title);
+        // if (currentRoles.length > 0) {
+        //     return currentRoles = currentRoles.filter((value, index) => currentRoles.indexOf(value) === index)
+        // }
+        console.log(currentRoles);
+        const currentEmployees = res.map((employee) => `${employee.first_name} ${employee.last_name}`);
         if (err) throw err;
         inquirer.prompt([
             {
@@ -76,7 +80,7 @@ addNewEmployee = () => {
             {
                 type: "list",
                 name: "manager",
-                message: "Who is the employee`'s manager?",
+                message: "Who is the employee's manager?",
                 choices: ["chester"]
             }
         ]).then((answer => {
@@ -84,6 +88,8 @@ addNewEmployee = () => {
                 .filter(role => role.title === answer.role)
                 .map(role => role.id);
             const role_id = roleID[0];
+            console.log(role_id);
+            // console.log(answer.manager);
             const { first_name, last_name } = answer;
             connection.query("INSERT INTO employees SET ?", {first_name, last_name, role_id}, (err, res) => {
                 if (err) throw err;
@@ -156,22 +162,22 @@ addNewDept = () => {
 };
 
 viewDepartments = () => {
-    let query = "SELECT departments.id, departments.dept_name, roles.salary ";
+    let query = "SELECT departments.id AS id, departments.dept_name AS department, roles.salary AS 'utilized budget' ";
     query += "FROM departments INNER JOIN roles ON departments.id = roles.department_id";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
             console.log("No current departments. Please add a department.")
         } 
-        const departmentsData = res.map(dept => [dept.id, dept.dept_name, dept.salary]);
-        console.table(['id', 'department', 'salary'], departmentsData);
+        console.table(res);
         init();
     })
 }
 
 viewEmployees = () => {
-    let query = "SELECT * FROM employees "
-    query += "INNER JOIN roles ON employees.role_id = roles.id ";
+    let query = "SELECT employees.id AS id, employees.first_name AS 'first name', employees.last_name AS 'last name', ";
+    query += "roles.title AS role, departments.dept_name AS department, roles.salary AS salary ";
+    query += "FROM employees INNER JOIN roles ON employees.role_id = roles.id ";
     query += "INNER JOIN departments ON roles.department_id = departments.id ";
     query += "ORDER BY roles.id ASC";
     connection.query(query, (err, res) => {
@@ -179,23 +185,21 @@ viewEmployees = () => {
         if (res.length === 0) {
             console.log("No current employees. Please add an employee.");
         }
-        const employeesData = res.map(emp => [emp.id, emp.first_name, emp.last_name, emp.title, emp.dept_name, emp.salary, emp.manager ]);
-        console.table(['id', 'first name', 'last name', 'title', 'department', 'salary', 'manager'], employeesData);
+        console.table(res);
         init();
     })
 }
 
 viewRoles = () => {
-    let query = "SELECT * FROM roles "
-    query += "INNER JOIN departments ON roles.department_id = departments.id ";
+    let query = "SELECT roles.id AS id, roles.title AS title, departments.dept_name AS department, roles.salary AS salary "
+    query += "FROM roles INNER JOIN departments ON roles.department_id = departments.id ";
     query += "ORDER BY roles.id ASC";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
             console.log("No current employees. Please add an employee.");
         }
-        const rolesData = res.map(role => [role.id, role.title, role.dept_name, role.salary]);
-        console.table(['id', 'title', 'department', 'salary'], rolesData);
+        console.table(res);
         init();
     })
 }
