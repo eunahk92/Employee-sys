@@ -162,8 +162,8 @@ addNewDept = () => {
 };
 
 viewDepartments = () => {
-    let query = "SELECT departments.id AS id, departments.dept_name AS department, roles.salary AS 'utilized budget' ";
-    query += "FROM departments INNER JOIN roles ON departments.id = roles.department_id";
+    let query = "SELECT d.id AS id, d.dept_name AS department, r.salary AS 'utilized budget' ";
+    query += "FROM departments AS d INNER JOIN roles AS r ON d.id = r.department_id";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -175,11 +175,11 @@ viewDepartments = () => {
 }
 
 viewEmployees = () => {
-    let query = "SELECT employees.id AS id, employees.first_name AS 'first name', employees.last_name AS 'last name', ";
-    query += "roles.title AS role, departments.dept_name AS department, roles.salary AS salary ";
-    query += "FROM employees INNER JOIN roles ON employees.role_id = roles.id ";
-    query += "INNER JOIN departments ON roles.department_id = departments.id ";
-    query += "ORDER BY roles.id ASC";
+    let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', ";
+    query += "r.title AS role, d.dept_name AS department, r.salary AS salary ";
+    query += "FROM employees AS e INNER JOIN roles AS r ON e.role_id = r.id ";
+    query += "INNER JOIN departments AS d ON r.department_id = d.id ";
+    query += "ORDER BY r.id ASC";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -191,9 +191,9 @@ viewEmployees = () => {
 }
 
 viewRoles = () => {
-    let query = "SELECT roles.id AS id, roles.title AS title, departments.dept_name AS department, roles.salary AS salary "
-    query += "FROM roles INNER JOIN departments ON roles.department_id = departments.id ";
-    query += "ORDER BY roles.id ASC";
+    let query = "SELECT r.id AS id, r.title AS title, d.dept_name AS department, r.salary AS salary "
+    query += "FROM roles AS r INNER JOIN departments AS d ON r.department_id = d.id ";
+    query += "ORDER BY r.id ASC";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
