@@ -79,9 +79,13 @@ addNewEmployee = () => {
                 message: "Who is the employee`'s manager?",
                 choices: ["chester"]
             }
-        ]).then((resp => {
-            const { first_name, last_name } = resp;
-            connection.query("INSERT INTO employees SET ?", {first_name, last_name}, (err, res) => {
+        ]).then((answer => {
+            const roleID = res
+                .filter(role => role.title === answer.role)
+                .map(role => role.id);
+            const role_id = roleID[0];
+            const { first_name, last_name } = answer;
+            connection.query("INSERT INTO employees SET ?", {first_name, last_name, role_id}, (err, res) => {
                 if (err) throw err;
                 console.log(`Successfully added ${first_name} ${last_name} to the database`);
                 init();
@@ -112,10 +116,10 @@ addNewRole = () => {
                 choices: currentDepartments
             }
         ]).then((answer => {
-            let deptID = res
+            const deptID = res
                 .filter(department => department.dept_name === answer.dept)
                 .map(department => department.id);
-            let department_id = deptID[0];
+            const department_id = deptID[0];
             const { title, salary } = answer;
             connection.query("INSERT INTO roles SET ?", {title, salary, department_id}, (err, data) => {
                     if (err) throw err;
@@ -155,12 +159,27 @@ viewDepartments = () => {
     let query = "SELECT departments.id, departments.dept_name, roles.salary ";
     query += "FROM departments INNER JOIN roles ON departments.id = roles.department_id";
     connection.query(query, (err, res) => {
-        console.log(res);
         if (err) throw err;
         if (res.length === 0) {
             console.log("No current departments. Please add a department.")
         } 
         const departments = res.map(dept => [dept.id, dept.dept_name, dept.salary]);
         console.table(['id', 'department', 'salary'], departments);
+    })
+}
+
+viewEmployees = () => {
+    let query = "SELECT * FROM employees "
+    query += "INNER JOIN roles ON employees.role_id = roles.id ";
+    query += "INNER JOIN departments ON roles.department_id = departments.id ";
+    query += "ORDER BY roles.id ASC";
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        if (res.length === 0) {
+            console.log("No current employees. Please add an employee.");
+        }
+        const employees = res.map(emp => [emp.id, emp.first_name, emp.last_name, emp.title, emp.dept_name, emp.salary, emp.manager ]);
+        console.table(['id', 'first name', 'last name', 'title', 'department', 'salary', 'manager'], employees);
+        init();
     })
 }
