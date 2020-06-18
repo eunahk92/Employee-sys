@@ -42,6 +42,9 @@ async function init() {
             case "Add a role":
                 addNewRole();
                 break;
+            case "Remove a role":
+                removeRole();
+                break;
             case "View departments":
                 viewDepartments();
                 break;
@@ -51,8 +54,12 @@ async function init() {
             case "Add a department":
                 addNewDept();
                 break;
+            case "Remove a department":
+                removeDepartment();
+                break;
             case "Quit":
                 return console.log("Goodbye.");
+                break;
         }
     } catch(err) { console.log(err); }
 }
@@ -251,6 +258,48 @@ removeEmployee = () => {
             connection.query(query, [nameArr[0], nameArr[1]], (err, res) => {
                 if (err) throw err;
                 console.table(`${employee} has been removed from database.`);
+                init();
+            });
+        }));
+    });
+};
+
+removeRole = () => {
+    connection.query("SELECT title FROM roles", (err, res) => {
+        const currentRoles = res.map((roles) => roles.title);
+        if (err) throw err;
+        inquirer.prompt([{
+            type: "list",
+            name: "role",
+            message: "Which role would you like to remove?",
+            choices: currentRoles
+        }]).then((answer => {
+            const { role } = answer;
+            let query = "DELETE FROM roles WHERE title = ?"
+            connection.query(query, [role], (err, res) => {
+                if (err) throw err;
+                console.table(`${role} has been removed from database.`);
+                init();
+            });
+        }));
+    });
+};
+
+removeDepartment = () => {
+    connection.query("SELECT dept_name FROM departments", (err, res) => {
+        const currentDept = res.map((dept) => dept.dept_name);
+        if (err) throw err;
+        inquirer.prompt([{
+            type: "list",
+            name: "dept",
+            message: "Which department would you like to remove?",
+            choices: currentDept
+        }]).then((answer => {
+            const { dept } = answer;
+            let query = "DELETE FROM departments WHERE dept_name = ?"
+            connection.query(query, [dept], (err, res) => {
+                if (err) throw err;
+                console.table(`${dept} has been removed from database.`);
                 init();
             });
         }));
