@@ -45,6 +45,9 @@ async function init() {
             case "View departments":
                 viewDepartments();
                 break;
+            case "View employees by department":
+                viewEmployeesByDept();
+                break;
             case "Quit":
                 return console.log("Goodbye.");
         }
@@ -52,13 +55,12 @@ async function init() {
 }
 
 addNewEmployee = () => {
-    connection.query("SELECT * FROM roles", (err, res) => {
+    let query = "SELECT * FROM roles AS r INNER JOIN employees AS e ON r.id = e.role_id";
+    connection.query(query, (err, res) => {
         let currentRoles = res.map((role) => role.title);
-        // if (currentRoles.length > 0) {
-        //     return currentRoles = currentRoles.filter((value, index) => currentRoles.indexOf(value) === index)
-        // }
         console.log(currentRoles);
         const currentEmployees = res.map((employee) => `${employee.first_name} ${employee.last_name}`);
+        console.log(currentEmployees);
         if (err) throw err;
         inquirer.prompt([
             {
@@ -125,9 +127,9 @@ addNewRole = () => {
             const deptID = res
                 .filter(department => department.dept_name === answer.dept)
                 .map(department => department.id);
-            const department_id = deptID[0];
+            const dept_id = deptID[0];
             const { title, salary } = answer;
-            connection.query("INSERT INTO roles SET ?", {title, salary, department_id}, (err, data) => {
+            connection.query("INSERT INTO roles SET ?", {title, salary, dept_id}, (err, data) => {
                     if (err) throw err;
                     console.log(`Successfully added ${title} role to the database`);
                     init();
@@ -161,9 +163,34 @@ addNewDept = () => {
     });
 };
 
+viewEmployeesByDept = () => {
+    connection.query("SELECT dept_name FROM departments", (err, res) => {
+        let currentDept = res.map((dept) => dept.dept_name);
+        if (err) throw err;
+        inquirer.prompt([{
+            type: "list",
+            name: "department",
+            message: "Which department would you like to view?",
+            choices: currentDept
+        }]).then((resp => {
+            const { department } = resp;
+            let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, r.salary AS salary, e.manager_id AS manager " 
+            query += "FROM employees AS e INNER JOIN roles AS r ON r.id = e.role_id "
+            query += "INNER JOIN departments AS d ON r.dept_id = d.id "
+            query += "WHERE dept_name = ?"
+            connection.query(query, [department], (err, res) => {
+                if (err) throw err;
+                console.table(res);
+                init();
+            });
+        }));
+    });
+};
+
 viewDepartments = () => {
-    let query = "SELECT d.id AS id, d.dept_name AS department, r.salary AS 'utilized budget' ";
-    query += "FROM departments AS d INNER JOIN roles AS r ON d.id = r.department_id";
+    let query = "SELECT d.id AS id, d.dept_name AS department "
+    // query += ", r.salary AS 'utilized budget' ";
+    query += "FROM departments AS d INNER JOIN roles AS r ON d.id = r.dept_id";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -176,10 +203,10 @@ viewDepartments = () => {
 
 viewEmployees = () => {
     let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', ";
-    query += "r.title AS role, d.dept_name AS department, r.salary AS salary ";
-    query += "FROM employees AS e INNER JOIN roles AS r ON e.role_id = r.id ";
-    query += "INNER JOIN departments AS d ON r.department_id = d.id ";
-    query += "ORDER BY r.id ASC";
+    query += "r.title AS role, d.dept_name AS department, r.salary AS salary, CONCAT(e.first_name, ' ', e.last_name) AS manager ";
+    query += "FROM employees AS e LEFT JOIN roles AS r ON e.role_id = r.id ";
+    query += "LEFT JOIN departments AS d ON r.dept_id = d.id ";
+    query += "ORDER BY e.id ASC";
     connection.query(query, (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -192,7 +219,7 @@ viewEmployees = () => {
 
 viewRoles = () => {
     let query = "SELECT r.id AS id, r.title AS title, d.dept_name AS department, r.salary AS salary "
-    query += "FROM roles AS r INNER JOIN departments AS d ON r.department_id = d.id ";
+    query += "FROM roles AS r INNER JOIN departments AS d ON r.dept_id = d.id ";
     query += "ORDER BY r.id ASC";
     connection.query(query, (err, res) => {
         if (err) throw err;
@@ -203,3 +230,4 @@ viewRoles = () => {
         init();
     })
 }
+

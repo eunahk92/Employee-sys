@@ -9,6 +9,7 @@ module.exports = {
         "View roles",
         "Add a department",
         "View departments",
+        "View employees by department",
         "Quit"
     ]
 }
