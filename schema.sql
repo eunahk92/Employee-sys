@@ -5,13 +5,13 @@ CREATE DATABASE ex_company_db;
 USE ex_company_db;
 
 CREATE TABLE departments (
-  id INT AUTO_INCREMENT,
+  id INT UNIQUE AUTO_INCREMENT,
   dept_name VARCHAR(30) NOT NULL,
   PRIMARY KEY (id)
 );
 
 CREATE TABLE roles (
-  id INT AUTO_INCREMENT,
+  id INT UNIQUE AUTO_INCREMENT,
   title VARCHAR(30) NOT NULL,
   salary INT(15) NOT NULL,
   department_id INT(10),
@@ -19,7 +19,7 @@ CREATE TABLE roles (
 );
 
 CREATE TABLE employees (
-  id INT AUTO_INCREMENT,
+  id INT UNIQUE AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
   role_id INT(5),
