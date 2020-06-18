@@ -52,9 +52,9 @@ async function init() {
 init();
 
 addNewEmployee = () => {
-    connection.query("SELECT * FROM role", (err, res) => {
+    connection.query("SELECT * FROM roles", (err, res) => {
         console.log(res);
-        let currentRoles = res.map((role) => role.title);
+        const currentRoles = res.map((role) => role.title);
         if (err) throw err;
         inquirer.prompt([
             {
@@ -71,14 +71,7 @@ addNewEmployee = () => {
                 type: "list",
                 name: "role",
                 message: "What is the employee's role?",
-                choices: currentRoles,
-                validate: function(input) {
-                    for (let i = 0; i < res.length; i++) {
-                        if (input === res[i].title) {
-                            console.log(res[i].id);
-                        }
-                    }
-                }
+                choices: currentRoles
             },
             {
                 type: "list",
@@ -87,10 +80,10 @@ addNewEmployee = () => {
                 choices: ["chester"]
             }
         ]).then((resp => {
-            const { first_name, last_name, role } = resp;
-            connection.query("INSERT INTO employee (first_name, last_name) VALUES (?)", [first_name, last_name], (err, res) => {
+            const { first_name, last_name } = resp;
+            connection.query("INSERT INTO employees SET ?", {first_name, last_name}, (err, res) => {
                 if (err) throw err;
-                console.log(`Successfully added ${first_name}`);
+                console.log(`Successfully added ${first_name} ${last_name} to the database`);
                 init();
             });
         }));
@@ -98,8 +91,8 @@ addNewEmployee = () => {
 }
 
 addNewRole = () => {
-    connection.query("SELECT * FROM department", (err, res) => {
-        let currentDept = res.map((dept) => `${dept.dept_name}`);
+    connection.query("SELECT * FROM departments", (err, res) => {
+        const currentDepartments = res.map((dept) => `${dept.dept_name}`);
         if (err) throw err;
         inquirer.prompt([
             {
@@ -116,21 +109,25 @@ addNewRole = () => {
                 type: "list",
                 name: "dept",
                 message: "What department is that role in?",
-                choices: currentDept
+                choices: currentDepartments
             }
-        ]).then((resp => {
-            const { title, salary, dept } = resp;
-            connection.query("INSERT INTO role (title, salary) VALUES (?)", [title, salary], (err, res) => {
-                if (err) throw err;
-                console.log(`Successfully added ${title} with a salary of ${salary}`);
-                init();
-            });
+        ]).then((answer => {
+            let deptID = res
+                .filter(department => department.dept_name === answer.dept)
+                .map(department => department.id);
+            let department_id = deptID[0];
+            const { title, salary } = answer;
+            connection.query("INSERT INTO roles SET ?", {title, salary, department_id}, (err, data) => {
+                    if (err) throw err;
+                    console.log(`Successfully added ${title} role to the database`);
+                    init();
+                });
         }));
     });
 }
 
 addNewDept = () => {
-    connection.query("SELECT dept_name FROM department", (err, res) => {
+    connection.query("SELECT dept_name FROM departments", (err, res) => {
         let currentDept = res.map((dept) => dept.dept_name);
         if (err) throw err;
         inquirer.prompt([{
@@ -145,22 +142,25 @@ addNewDept = () => {
                     return init();
                 }
             }
-            connection.query("INSERT INTO department (dept_name) VALUES (?)", [dept_name], (err, res) => {
+            connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name], (err, res) => {
                 if (err) throw err;
-                console.log(`Successfully added ${dept_name} to the list of departments`);
+                console.log(`Successfully added ${dept_name} to the database`);
                 init();
             });
         }));
     });
-}
+};
 
 viewDepartments = () => {
-    connection.query("SELECT * FROM department", (err, res) => {
+    let query = "SELECT departments.id, departments.dept_name, roles.salary ";
+    query += "FROM departments INNER JOIN roles ON departments.id = roles.department_id";
+    connection.query(query, (err, res) => {
+        console.log(res);
         if (err) throw err;
         if (res.length === 0) {
             console.log("No current departments. Please add a department.")
         } 
-        const departments = res.map(dept => [dept.id, dept.dept_name]);
-        console.table(['id', 'department'], departments);
+        const departments = res.map(dept => [dept.id, dept.dept_name, dept.salary]);
+        console.table(['id', 'department', 'salary'], departments);
     })
 }
