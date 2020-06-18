@@ -9,13 +9,13 @@ VALUES ("HR");
 INSERT INTO departments (dept_name)
 VALUES ("Marketing");
 
-INSERT INTO roles (title, salary, department_id)
+INSERT INTO roles (title, salary, dept_id)
 VALUES ("Software Engineer", 100000, 1);
 
-INSERT INTO roles (title, salary, department_id)
+INSERT INTO roles (title, salary, dept_id)
 VALUES ("Payroll Specialist", 70000, 2);
 
-INSERT INTO roles (title, salary, department_id)
+INSERT INTO roles (title, salary, dept_id)
 VALUES ("PR", 70000, 3);
 
 INSERT INTO employees (first_name, last_name, role_id)
