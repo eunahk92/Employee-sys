@@ -8,6 +8,7 @@ module.exports = {
         "Add a role",
         "View roles",
         "Add a department",
-        "View departments"
+        "View departments",
+        "Quit"
     ]
 }
