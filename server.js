@@ -2,6 +2,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql");
 const dotenv = require("dotenv");
 const mainMenu = require("./public/mainMenu");
+const table = require("console.table");
 
 dotenv.config();
 const { DB_HOST, PORT, DB_USER, DB_PASSWORD } = process.env;
@@ -51,7 +52,7 @@ async function init() {
 init();
 
 addNewEmployee = () => {
-    connection.query("SELECT title FROM role", (err, res) => {
+    connection.query("SELECT * FROM role", (err, res) => {
         console.log(res);
         let currentRoles = res.map((role) => role.title);
         if (err) throw err;
@@ -70,7 +71,14 @@ addNewEmployee = () => {
                 type: "list",
                 name: "role",
                 message: "What is the employee's role?",
-                choices: currentRoles
+                choices: currentRoles,
+                validate: function(input) {
+                    for (let i = 0; i < res.length; i++) {
+                        if (input === res[i].title) {
+                            console.log(res[i].id);
+                        }
+                    }
+                }
             },
             {
                 type: "list",
@@ -80,7 +88,7 @@ addNewEmployee = () => {
             }
         ]).then((resp => {
             const { first_name, last_name, role } = resp;
-            connection.query("INSERT INTO employee set ?", {first_name, last_name}, (err, res) => {
+            connection.query("INSERT INTO employee (first_name, last_name) VALUES (?)", [first_name, last_name], (err, res) => {
                 if (err) throw err;
                 console.log(`Successfully added ${first_name}`);
                 init();
@@ -90,8 +98,8 @@ addNewEmployee = () => {
 }
 
 addNewRole = () => {
-    connection.query("SELECT dept_name FROM department", (err, res) => {
-        let currentDept = res.map((dept) => dept.dept_name);
+    connection.query("SELECT * FROM department", (err, res) => {
+        let currentDept = res.map((dept) => `${dept.dept_name}`);
         if (err) throw err;
         inquirer.prompt([
             {
@@ -112,7 +120,7 @@ addNewRole = () => {
             }
         ]).then((resp => {
             const { title, salary, dept } = resp;
-            connection.query("INSERT INTO role set ?", {title, salary}, (err, res) => {
+            connection.query("INSERT INTO role (title, salary) VALUES (?)", [title, salary], (err, res) => {
                 if (err) throw err;
                 console.log(`Successfully added ${title} with a salary of ${salary}`);
                 init();
@@ -137,7 +145,7 @@ addNewDept = () => {
                     return init();
                 }
             }
-            connection.query("INSERT INTO department set ?", {dept_name}, (err, res) => {
+            connection.query("INSERT INTO department (dept_name) VALUES (?)", [dept_name], (err, res) => {
                 if (err) throw err;
                 console.log(`Successfully added ${dept_name} to the list of departments`);
                 init();
@@ -146,3 +154,13 @@ addNewDept = () => {
     });
 }
 
+viewDepartments = () => {
+    connection.query("SELECT * FROM department", (err, res) => {
+        if (err) throw err;
+        if (res.length === 0) {
+            console.log("No current departments. Please add a department.")
+        } 
+        const departments = res.map(dept => [dept.id, dept.dept_name]);
+        console.table(['id', 'department'], departments);
+    })
+}
