@@ -163,8 +163,9 @@ viewDepartments = () => {
         if (res.length === 0) {
             console.log("No current departments. Please add a department.")
         } 
-        const departments = res.map(dept => [dept.id, dept.dept_name, dept.salary]);
-        console.table(['id', 'department', 'salary'], departments);
+        const departmentsData = res.map(dept => [dept.id, dept.dept_name, dept.salary]);
+        console.table(['id', 'department', 'salary'], departmentsData);
+        init();
     })
 }
 
@@ -178,8 +179,23 @@ viewEmployees = () => {
         if (res.length === 0) {
             console.log("No current employees. Please add an employee.");
         }
-        const employees = res.map(emp => [emp.id, emp.first_name, emp.last_name, emp.title, emp.dept_name, emp.salary, emp.manager ]);
-        console.table(['id', 'first name', 'last name', 'title', 'department', 'salary', 'manager'], employees);
+        const employeesData = res.map(emp => [emp.id, emp.first_name, emp.last_name, emp.title, emp.dept_name, emp.salary, emp.manager ]);
+        console.table(['id', 'first name', 'last name', 'title', 'department', 'salary', 'manager'], employeesData);
+        init();
+    })
+}
+
+viewRoles = () => {
+    let query = "SELECT * FROM roles "
+    query += "INNER JOIN departments ON roles.department_id = departments.id ";
+    query += "ORDER BY roles.id ASC";
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        if (res.length === 0) {
+            console.log("No current employees. Please add an employee.");
+        }
+        const rolesData = res.map(role => [role.id, role.title, role.dept_name, role.salary]);
+        console.table(['id', 'title', 'department', 'salary'], rolesData);
         init();
     })
 }
