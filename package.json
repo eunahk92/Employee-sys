@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/eunahk92/Employee-sys#readme",
   "dependencies": {
+    "console.table": "^0.10.0",
     "dotenv": "^8.2.0",
     "inquirer": "^7.2.0",
     "mysql": "^2.18.1"
