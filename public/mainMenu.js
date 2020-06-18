@@ -3,13 +3,14 @@ module.exports = {
     name: "action",
     message: "What would you like to do?",
     choices: [
-        "Add an employee",
         "View employees",
-        "Add a role",
+        "Add an employee",
+        "Remove an employee",
         "View roles",
-        "Add a department",
+        "Add a role",
         "View departments",
         "View employees by department",
+        "Add a department",
         "Quit"
     ]
 }

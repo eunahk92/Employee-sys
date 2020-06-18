@@ -27,26 +27,29 @@ async function init() {
     try {
         const { action } = await inquirer.prompt(mainMenu);
         switch (action) {
-            case "Add an employee":
-                addNewEmployee();
-                break;
-            case "Add a role":
-                addNewRole();
-                break;
-            case "Add a department":
-                addNewDept();
-                break;
             case "View employees":
                 viewEmployees();
                 break;
+            case "Add an employee":
+                addNewEmployee();
+                break;
+            case "Remove an employee":
+                removeEmployee();
+                break;
             case "View roles":
                 viewRoles();
+                break;
+            case "Add a role":
+                addNewRole();
                 break;
             case "View departments":
                 viewDepartments();
                 break;
             case "View employees by department":
                 viewEmployeesByDept();
+                break;
+            case "Add a department":
+                addNewDept();
                 break;
             case "Quit":
                 return console.log("Goodbye.");
@@ -146,8 +149,8 @@ addNewDept = () => {
             type: "input",
             name: "dept_name",
             message: "What department would you like to add?"
-        }]).then((resp => {
-            const { dept_name } = resp;
+        }]).then((answer => {
+            const { dept_name } = answer;
             for (let i = 0; i < currentDept.length; i++) {
                 if (dept_name === currentDept[i]) {
                     console.log("Department already exists.");
@@ -172,8 +175,8 @@ viewEmployeesByDept = () => {
             name: "department",
             message: "Which department would you like to view?",
             choices: currentDept
-        }]).then((resp => {
-            const { department } = resp;
+        }]).then((answer => {
+            const { department } = answer;
             let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, r.salary AS salary, e.manager_id AS manager " 
             query += "FROM employees AS e INNER JOIN roles AS r ON r.id = e.role_id "
             query += "INNER JOIN departments AS d ON r.dept_id = d.id "
@@ -231,3 +234,25 @@ viewRoles = () => {
     })
 }
 
+removeEmployee = () => {
+    connection.query("SELECT first_name, last_name FROM employees", (err, res) => {
+        const currentEmployees = res.map((employee) => `${employee.first_name} ${employee.last_name}`);
+        if (err) throw err;
+        inquirer.prompt([{
+            type: "list",
+            name: "employee",
+            message: "Which employee would you like to remove?",
+            choices: currentEmployees
+        }]).then((answer => {
+            const { employee } = answer;
+            const nameArr = employee.split(" ");
+            console.log(nameArr);
+            let query = "DELETE FROM employees WHERE first_name = ? AND last_name = ?"
+            connection.query(query, [nameArr[0], nameArr[1]], (err, res) => {
+                if (err) throw err;
+                console.table(`${employee} has been removed from database.`);
+                init();
+            });
+        }));
+    });
+};
