@@ -3,16 +3,17 @@ module.exports = {
     name: "action",
     message: "What would you like to do?",
     choices: [
-        "View employees",
-        "Add an employee",
-        "Remove an employee",
-        "View roles",
-        "Add a role",
-        "Remove a role",
-        "View departments",
-        "View employees by department",
-        "Add a department",
-        "Remove a department",
+        "View All Employees",
+        "View Employees By Department",
+        "Add A New Employee",
+        "Update An Employee's Info",
+        "Remove An Employee",
+        "View All Roles",
+        "Add A New Role",
+        "Remove A Role",
+        "View All Departments",
+        "Add A New Department",
+        "Remove A Department",
         "Quit"
     ]
 }

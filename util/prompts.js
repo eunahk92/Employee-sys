@@ -57,33 +57,43 @@ module.exports = {
             }
         ])
     },
-    removeEmployee(employeeNames) {
+    removeData(type, list) {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: `${type}`,
+                message: `Which ${type} would you like to remove?`,
+                choices: list
+            }
+        ])
+    },
+    updateData(list, employeeList) {
         return inquirer.prompt([
             {
                 type: "list",
                 name: "employee",
-                message: "Which employee would you like to remove?",
-                choices: employeeNames
-            }
-        ])
-    },
-    removeRole(roleTitles) {
-        return inquirer.prompt([
+                message: "Which employee would you like to update?",
+                choices: employeeList
+            },
+            {
+                type: "list",
+                name: "action",
+                message: `What would you like to update for the employee?`,
+                choices: ["Role", "Manager"]
+            },
             {
                 type: "list",
                 name: "role",
-                message: "Which role would you like to remove?",
-                choices: roleTitles
-            }
-        ])
-    },
-    removeDept(departmentNames) {
-        return inquirer.prompt([
+                message: "What is the employee's new role?",
+                choices: list,
+                when: input => input.action === "Role"
+            },
             {
                 type: "list",
-                name: "department",
-                message: "Which department would you like to remove?",
-                choices: departmentNames
+                name: "manager",
+                message: "Who is the employee's new manager?",
+                choices: employeeList,
+                when: input => input.action === "Manager"
             }
         ])
     }
