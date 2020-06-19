@@ -56,5 +56,35 @@ module.exports = {
                 message: "What department would you like to add?"
             }
         ])
+    },
+    removeEmployee(employeeNames) {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "employee",
+                message: "Which employee would you like to remove?",
+                choices: employeeNames
+            }
+        ])
+    },
+    removeRole(roleTitles) {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "role",
+                message: "Which role would you like to remove?",
+                choices: roleTitles
+            }
+        ])
+    },
+    removeDept(departmentNames) {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "department",
+                message: "Which department would you like to remove?",
+                choices: departmentNames
+            }
+        ])
     }
 }

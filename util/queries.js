@@ -5,7 +5,7 @@ connection.query = util.promisify(connection.query);
 
 module.exports = {
     // Gets employees, roles, or departments table
-    getData: function(tableName) {
+    getData(tableName) {
         return connection.query("SELECT * FROM ??", [tableName]);
     },
     // getRoles: function() {
@@ -17,13 +17,25 @@ module.exports = {
     // getDepartments: function() {
     //     return connection.query("SELECT * FROM departments");
     // },
+
     // Adds employees
-    addEmployee: function(firstName, lastName, roleId, managerId) {
+    addEmployee(firstName, lastName, roleId, managerId) {
         return connection.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [firstName, lastName, roleId, managerId]);
     },
+
     // Adds roles
-    addRole: function(title, salary, deptId) {
-        return connection.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?)", [title, salary, deptId]);
+    addRole(title, salary, deptId) {
+        return connection.query("INSERT INTO roles (title, salary, dept_id) VALUES (?, ?, ?)", [title, salary, deptId]);
     },
+
+    // Adds departments
+    addDept(dept_name) {
+        return connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name]);
+    },
+
+    // Removes employees, roles, or departments
+    deleteData(tableName, colName, colValue) {
+        return connection.query("DELETE FROM ?? WHERE ?? = ?", [tableName, colName, colValue]);
+    }
 
 }
