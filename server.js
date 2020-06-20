@@ -6,9 +6,8 @@ const queries = require("./util/queries");
 const prompts = require("./util/prompts");
 
 welcomeMsg = () => {
-    console.log(`\n`)
-    console.log(figlet.textSync(`Employee\nDatabase`, {
-        font: 'Basic',
+    console.log(figlet.textSync(`Company\n\n\nDatabase`, {
+        font: 'Standard',
         horizontalLayout: 'default',
         verticalLayout: 'default'
     }));
@@ -115,7 +114,7 @@ async function removeEmployee() {
         let matchedEmployeeID = await filterEmployees(employees, employee);
 
         let result = await queries.deleteData("employees", "id", matchedEmployeeID);
-        await console.log(`${employee[0]} ${employee[1]} has been deleted.\n`);
+        await console.log(`(${result.affectedRows}) employee has been deleted.\n`);
         await init();
 
     } catch (err) { if (err) throw (err) }
@@ -141,14 +140,14 @@ async function removeRole() {
 async function removeDept() {
     try {
         let departments = await queries.getData("departments");
-        let departmentNames = getDeptNames(departments);
+        let departmentNames = await getDeptNames(departments);
 
         let answer = await prompts.removeData("department", departmentNames);
         let { department } = answer;
         let matchedDeptID = await filterDept(departments, department);
 
         let result = await queries.deleteData("departments", "id", matchedDeptID);
-        await console.log(`(${result.affectedRows}) department has been deleted from your database.\n`);
+        await console.log(`(${result.affectedRows}) department has been deleted.\n`);
         await init();
 
     } catch (err) { if (err) throw (err) }
@@ -172,6 +171,16 @@ async function viewData(method) {
     } catch (err) { if (err) throw (err) }
 }
 
+async function viewEmployeesByDept() {
+    try {
+        let departments = await queries.getData("departments");
+        let departmentNames = await getDeptNames(departments);
+        let { department } = await prompts.listDepartments(departmentNames);
+        await queries.viewEmployeesByDepartments(department);
+        await init();
+    } catch (err) { if (err) throw (err) }
+}
+
 async function updateEmployee() {
     try {
         let roles = await queries.getData("roles");
@@ -180,7 +189,7 @@ async function updateEmployee() {
         let employeeNames = await getEmployeeNames(employees);
     
         let answer = await prompts.updateData(roleTitles, employeeNames);
-        let { employee, action, manager, role, salary } = answer;
+        let { employee, action, manager, role } = answer;
         employee = await employee.split(" ");    
         let matchedEmployeeID = await filterEmployees(employees, employee);
 
