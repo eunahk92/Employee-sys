@@ -1,10 +1,12 @@
 const inquirer = require("inquirer");
 const figlet = require("figlet");
-const mainMenu = require("./util/mainMenu");
 const table = require("console.table");
+const mainMenu = require("./util/mainMenu");
 const queries = require("./util/queries");
 const prompts = require("./util/prompts");
 const connection = require("./util/connection");
+
+let roles, roleTitles, employees, employeeNames, departments, departmentNames;
 
 welcomeMsg = () => {
     console.log(figlet.textSync(`Company\n\n\nDatabase`, {
@@ -14,10 +16,22 @@ welcomeMsg = () => {
     }));
 }
 
-welcomeMsg();
+async function pullUpdatedData() {
+    try {
+        roles = await queries.getData("roles");
+        roleTitles = await getRoleTitles(roles);
+
+        employees = await queries.getData("employees");
+        employeeNames = await getEmployeeNames(employees);
+
+        departments = await queries.getData("departments");
+        departmentNames = await getDeptNames(departments);
+    } catch (err) { if (err) throw (err) }
+}
 
 async function init() {
     try {
+        pullUpdatedData();
         const { action } = await inquirer.prompt(mainMenu);
         switch (action) {
             case "View All Employees":
@@ -53,17 +67,14 @@ async function init() {
 
 async function addNewEmployee() {
     try {
-        let roles = await queries.getData("roles");
-        let roleTitles = await getRoleTitles(roles);
-        let employees = await queries.getData("employees");
-        let employeeNames = await getEmployeeNames(employees);
+        roleTitles = removeDuplicates(roleTitles, roleTitles);
         employeeNames.unshift("None");
 
-        let answers = await prompts.addEmployee(roleTitles, employeeNames);
-        let { first_name, last_name, role, manager } = answers;
+        let { first_name, last_name, role, manager } = await prompts.addEmployee(roleTitles, employeeNames);
+
         let matchedManagerID, matchedRoleID;
         if (manager !== "None") {
-            manager = manager.toLowerCase().split(" ");
+            manager = manager.split(" ");
             matchedManagerID = await filterEmployees(employees, manager);
         } else {
             matchedManagerID = null;
@@ -78,12 +89,10 @@ async function addNewEmployee() {
 
 async function addNewRole() {
     try {
-        let departments = await queries.getData("departments");
-        let departmentNames = await getDeptNames(departments);
+        roleTitles = removeDuplicates(roleTitles, roleTitles);
+        departmentNames = removeDuplicates(departmentNames, departmentNames);
 
-        let answers = await prompts.addRole(departmentNames);
-        const { title, salary, dept } = answers;
-
+        let { title, salary, dept } = await prompts.addRole(departmentNames, roleTitles);
         let matchedDeptID = await filterDept(departments, dept);
 
         let result = await queries.addRole(title, salary, matchedDeptID);
@@ -95,8 +104,7 @@ async function addNewRole() {
 
 async function addNewDept() {
     try {
-        let answers = await prompts.addDepartment();
-        const { dept_name } = answers;
+        let { dept_name }  = await prompts.addDepartment();
 
         let result = await queries.addDept(dept_name);
         await console.log(`The department, ${dept_name}, has been added with an ID of ${result.insertId}.\n`);
@@ -107,12 +115,8 @@ async function addNewDept() {
 
 async function removeEmployee() {
     try {
-        let employees = await queries.getData("employees");
-        let employeeNames = await getEmployeeNames(employees);
-
-        let answer = await prompts.removeData("employee", employeeNames);
-        let { employee } = answer;
-        employee = employee.toLowerCase().split(" ");
+        let { employee } = await prompts.removeData("employee", employeeNames);
+        employee = employee.split(" ");
 
         let matchedEmployeeID = await filterEmployees(employees, employee);
 
@@ -125,12 +129,7 @@ async function removeEmployee() {
 
 async function removeRole() {
     try {
-        let roles = await queries.getData("roles");
-        let roleTitles = getRoleTitles(roles);
-
-        let answer = await prompts.removeData("role", roleTitles);
-        let { role } = answer;
-
+        let { role } = await prompts.removeData("role", roleTitles);
         let matchedRoleID = await filterRoles(roles, role);
 
         let result = await queries.deleteData("roles", "id", matchedRoleID);
@@ -142,11 +141,7 @@ async function removeRole() {
 
 async function removeDept() {
     try {
-        let departments = await queries.getData("departments");
-        let departmentNames = await getDeptNames(departments);
-
-        let answer = await prompts.removeData("department", departmentNames);
-        let { department } = answer;
+        let { department } = await prompts.removeData("department", departmentNames);
         let matchedDeptID = await filterDept(departments, department);
         
         let result = await queries.deleteData("departments", "id", matchedDeptID);
@@ -178,15 +173,13 @@ async function viewEmpData(type) {
     try {
         switch (type) {
             case ("department"):
-                let departments = await queries.getData("departments");
-                let departmentNames = await getDeptNames(departments);
                 let { department } = await prompts.viewData("department", departmentNames);
                 await queries.viewEmployeesByDepartments(department);
                 break;
             case ("manager"):
                 let result = await queries.getManagers();
                 if (result.length === 0) {
-                    console.log("No managers are currently in your company.");
+                    console.log("You have no managers currently.");
                     break;
                 }
                 let managersArr = result.map(name => name.manager);
@@ -203,13 +196,7 @@ async function viewEmpData(type) {
 
 async function updateEmployee() {
     try {
-        let roles = await queries.getData("roles");
-        let roleTitles = await getRoleTitles(roles);
-        let employees = await queries.getData("employees");
-        let employeeNames = await getEmployeeNames(employees);
-    
-        let answer = await prompts.updateData(roleTitles, employeeNames);
-        let { employee, action, manager, role } = answer;
+        let { employee, action, manager, role } = await prompts.updateData(roleTitles, employeeNames);
         employee = await employee.split(" ");    
         let matchedEmployeeID = await filterEmployees(employees, employee);
 
@@ -230,22 +217,23 @@ async function updateEmployee() {
     } catch (err) { if (err) throw (err) }
 }
 
-filterRoles = (arr, answer) => {
-    return arr.filter(item => item.title.toLowerCase() === answer.toLowerCase())[0].id;
+filterRoles = (arr, answer) => arr.filter(item => item.title === answer)[0].id;
+filterDept = (arr, answer) => arr.filter(item => item.dept_name === answer)[0].id;
+filterEmployees = (arr, answer) => arr.filter(item => item.first_name === answer[0] && item.last_name === answer[1])[0].id;
+
+getRoleTitles = arr => arr.map(item => item.title);
+getEmployeeNames = arr => arr.map(item => `${item.first_name} ${item.last_name}`);
+getDeptNames = arr => arr.map(item => item.dept_name);
+
+removeDuplicates = (arr) => {
+    const newArr = [];
+    for (let i = 0; i < arr.length; i++) {
+        if(!newArr.includes(arr[i])) {
+            newArr.push(arr[i]);
+        }
+    }
+    return newArr;
 }
 
-filterDept = (arr, answer) => {
-    return arr.filter(item => item.dept_name === answer)[0].id;
-}
-
-filterEmployees = (arr, answer) => {
-    return arr.filter(item => item.first_name.toLowerCase() === answer[0].toLowerCase() && item.last_name.toLowerCase() === answer[1].toLowerCase())[0].id;
-}
-
-getRoleTitles = arr => { return arr.map(item => item.title) }
-
-getEmployeeNames = arr => { return arr.map(item => `${item.first_name} ${item.last_name}`) }
-
-getDeptNames = arr => { return arr.map(item => item.dept_name) }
-
+welcomeMsg();
 init();
