@@ -1,51 +1,52 @@
 const inquirer = require("inquirer");
+const figlet = require("figlet");
 const mainMenu = require("./util/mainMenu");
 const table = require("console.table");
 const queries = require("./util/queries");
 const prompts = require("./util/prompts");
+
+welcomeMsg = () => {
+    console.log(`\n`)
+    console.log(figlet.textSync(`Employee\nDatabase`, {
+        font: 'Basic',
+        horizontalLayout: 'default',
+        verticalLayout: 'default'
+    }));
+}
+
+welcomeMsg();
 
 async function init() {
     try {
         const { action } = await inquirer.prompt(mainMenu);
         switch (action) {
             case "View All Employees":
-                viewData("employees");
-                break;
+                return viewData("employees");
             case "View Employees By Department":
-                viewEmployeesByDept();
-                break;
+                return viewEmployeesByDept();
             case "Add A New Employee":
-                addNewEmployee();
-                break;
+                return addNewEmployee();
             case "Update An Employee's Info":
-                updateEmployee();
-                break;
+                return updateEmployee();
             case "Remove An Employee":
-                removeEmployee();
-                break;
+                return removeEmployee();
             case "View All Roles":
-                viewData("roles");
-                break;
+                return viewData("roles");
             case "Add A New Role":
-                addNewRole();
-                break;
+                return addNewRole();
             case "Remove A Role":
-                removeRole();
-                break;
+                return removeRole();
             case "View All Departments":
-                viewData("departments");
-                break;
+                return viewData("departments");
             case "Add A New Department":
-                addNewDept();
-                break;
+                return addNewDept();
             case "Remove A Department":
-                removeDept();
-                break;
+                return removeDept();
             default:
                 console.log("Goodbye.");
                 return;
         }
-    } catch(err) { console.log(err); }
+    } catch(err) { if (err) throw (err); }
 }
 
 async function addNewEmployee() {
@@ -55,20 +56,22 @@ async function addNewEmployee() {
 
         let employees = await queries.getData("employees");
         let employeeNames = await getEmployeeNames(employees);
-
+        employeeNames.unshift("None");
         let answers = await prompts.addEmployee(roleTitles, employeeNames);
         let { first_name, last_name, role, manager } = answers;
-
-        let chosenRoleID = await filterRoles(roles, role);
-
-        manager = manager.toLowerCase().split(" ");
-        let chosenManagerID = employees.filter(item => item.first_name.toLowerCase() === manager[0] && item.last_name.toLowerCase() === manager[1])[0].id;
-        
-        let result = await queries.addEmployee(first_name, last_name, chosenRoleID, chosenManagerID);
+        let matchedManagerID, matchedRoleID;
+        if (manager !== "None") {
+            manager = manager.toLowerCase().split(" ");
+            matchedManagerID = await filterEmployees(employees, manager);
+        } else {
+            matchedManagerID = null;
+        }
+        matchedRoleID = await filterRoles(roles, role);
+        let result = await queries.addEmployee(first_name, last_name, matchedRoleID, matchedManagerID);
         await console.log(`${first_name} ${last_name} has been added with an ID of ${result.insertId}.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function addNewRole() {
@@ -79,13 +82,13 @@ async function addNewRole() {
         let answers = await prompts.addRole(departmentNames);
         const { title, salary, dept } = answers;
 
-        let chosenDeptID = await filterDept(departments, dept);
+        let matchedDeptID = await filterDept(departments, dept);
 
-        let result = await queries.addRole(title, salary, chosenDeptID);
+        let result = await queries.addRole(title, salary, matchedDeptID);
         await console.log(`The role, ${title}, has been added with an ID of ${result.insertId}.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function addNewDept() {
@@ -97,7 +100,7 @@ async function addNewDept() {
         await console.log(`The department, ${dept_name}, has been added with an ID of ${result.insertId}.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function removeEmployee() {
@@ -109,13 +112,13 @@ async function removeEmployee() {
         let { employee } = answer;
         employee = employee.toLowerCase().split(" ");
 
-        let chosenEmployeeID = await filterEmployees(employees, employee);
+        let matchedEmployeeID = await filterEmployees(employees, employee);
 
-        let result = await queries.deleteData("employees", "id", chosenEmployeeID);
+        let result = await queries.deleteData("employees", "id", matchedEmployeeID);
         await console.log(`${employee[0]} ${employee[1]} has been deleted.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function removeRole() {
@@ -126,13 +129,13 @@ async function removeRole() {
         let answer = await prompts.removeData("role", roleTitles);
         let { role } = answer;
 
-        let chosenRoleID = await filterRoles(roles, role);
+        let matchedRoleID = await filterRoles(roles, role);
 
-        let result = await queries.deleteData("roles", "id", chosenRoleID);
-        await console.log(`${role} has been deleted.\n`);
+        let result = await queries.deleteData("roles", "id", matchedRoleID);
+        await console.log(`(${result.affectedRows}) role has been deleted.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function removeDept() {
@@ -142,13 +145,13 @@ async function removeDept() {
 
         let answer = await prompts.removeData("department", departmentNames);
         let { department } = answer;
-        let chosenDeptID = await filterDept(departments, department);
+        let matchedDeptID = await filterDept(departments, department);
 
-        let result = await queries.deleteData("departments", "id", chosenDeptID);
-        await console.log(`${department} has been deleted.\n`);
+        let result = await queries.deleteData("departments", "id", matchedDeptID);
+        await console.log(`(${result.affectedRows}) department has been deleted from your database.\n`);
         await init();
 
-    } catch (err) { console.log(err) }
+    } catch (err) { if (err) throw (err) }
 }
 
 async function viewData(method) {
@@ -157,52 +160,45 @@ async function viewData(method) {
         switch (method) {
             case ("employees"):
                 result = await queries.viewEmployees();
-                init();
                 break;
             case ("roles"):
                 result = await queries.viewRoles();
-                init();
                 break;
             case ("departments"):
                 result = await queries.viewDepartments();
-                init();
                 break;
         }
-    } catch (err) { console.log(err) }
+        init();
+    } catch (err) { if (err) throw (err) }
 }
 
 async function updateEmployee() {
-    // list of role titles
-    let roles = await queries.getData("roles");
-    let roleTitles = await getRoleTitles(roles);
-    // list of employee names
-    let employees = await queries.getData("employees");
-    let employeeNames = await getEmployeeNames(employees);
-    // asks prompts & destructure answers
-    let answer = await prompts.updateData(roleTitles, employeeNames);
-    let { employee, action, manager, role } = answer;
-    // changes employee name to an array [first name, last name]
-    employee = await employee.split(" ");
-    // looks for an employee id where it matches name
-    let chosenEmployeeID = await filterEmployees(employees, employee);
+    try {
+        let roles = await queries.getData("roles");
+        let roleTitles = await getRoleTitles(roles);
+        let employees = await queries.getData("employees");
+        let employeeNames = await getEmployeeNames(employees);
+    
+        let answer = await prompts.updateData(roleTitles, employeeNames);
+        let { employee, action, manager, role, salary } = answer;
+        employee = await employee.split(" ");    
+        let matchedEmployeeID = await filterEmployees(employees, employee);
 
-    switch (action) {
-        case ("Role"):
-            let chosenRoleID = await filterRoles(roles, role);
-
-            let result1 = await queries.updateEmployee("employees", "role_id", chosenRoleID, "id", chosenEmployeeID);
-            await console.log(`${employee[0]} ${employee[1]}'s role has been changed to: ${role}.\n`);
-            init();
-            break;
-        case ("Manager"):
-            manager = await manager.split(" ");
-            let chosenManagerID = await filterEmployees(employees, employee);
-
-            let result2 = await queries.updateEmployee("employees", "manager_id", chosenManagerID, "id", chosenEmployeeID, );
-            await console.log(`${employee[0]} ${employee[1]}'s manager has been changed to: ${manager}.\n`);
-            init();
-            break;
-    }
+        let result;
+        switch (action) {
+            case ("Role"):
+                let matchedRoleID = await filterRoles(roles, role);
+                result = await queries.updateEmployee("employees", "role_id", matchedRoleID, "id", matchedEmployeeID);
+                break;
+            case ("Manager"):
+                manager = await manager.split(" ");
+                let newManagerID = await filterEmployees(employees, manager);
+                result = await queries.updateEmployee("employees", "manager_id", newManagerID, "id", matchedEmployeeID);
+                break;
+        }
+        await console.log(`(${result.affectedRows}) employee has been updated.\n`);
+        init();
+    } catch (err) { if (err) throw (err) }
 }
 
 filterRoles = (arr, answer) => {
