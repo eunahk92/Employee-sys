@@ -21,16 +21,20 @@ npm i
 ## Usage
 Run the SERVER.JS file using NODE from the command line and choose the action desired from the list given & can do multiple actions.
 
-With this application, it will allow the user to:
-  * Add departments, roles, employees
-  * View departments, roles, employees
-  * Delete departments, roles, and employees
-  * Update employee roles
-  * Update employee managers
-  * View employees by manager
-  * View employees by department
+With this application, it will allow the user to do various actions:
 
-![](Assets/initial_prompts.gif)
+##### View all departments, roles, employees; view employees by manager; or employees by department:
+![](assets/view_data.gif)
+
+##### Add departments, roles, employees:
+![](assets/add_data.gif)
+
+##### Delete departments, roles, and employees:
+![](assets/remove_data.gif)
+
+##### Update employee's role or manager:
+![](assets/update_data.gif)
+
 
 
 ## Questions
