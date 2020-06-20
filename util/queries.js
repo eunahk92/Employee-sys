@@ -66,7 +66,7 @@ module.exports = {
     viewEmployeesByDepartments(department) {
         let query = "SELECT e.id AS 'emp. id', e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, ";
         query += "CONCAT(m.first_name, ' ', m.last_name) AS manager, r.salary AS salary ";
-        query += "FROM employees AS e INNER JOIN employees m ON m.id = e.manager_id " 
+        query += "FROM employees AS e LEFT JOIN employees m ON m.id = e.manager_id " 
         query += "LEFT JOIN roles AS r ON r.id = e.role_id ";
         query += "LEFT JOIN departments AS d ON r.dept_id = d.id ";
         query += "WHERE dept_name = ?"
