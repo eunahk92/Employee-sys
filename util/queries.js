@@ -66,7 +66,7 @@ module.exports = {
         })
     },
     viewEmployeesByDepartments(department) {
-        let query = "SELECT e.id AS 'employee id', e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, ";
+        let query = "SELECT e.id AS 'emp. id', e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, ";
         query += "CONCAT(m.first_name, ' ', m.last_name) AS manager, r.salary AS salary ";
         query += "FROM employees AS e INNER JOIN employees m ON m.id = e.manager_id " 
         query += "LEFT JOIN roles AS r ON r.id = e.role_id ";
@@ -74,7 +74,7 @@ module.exports = {
         query += "WHERE dept_name = ?"
         return connection.query(query, [department]).then(res => {
             if (res.length === 0) {
-                console.log("No current departments. Please add a department.");
+                console.log("No current employees in the department. Please add an employee.");
             }
             console.table(res);
         })
