@@ -4,23 +4,23 @@ const util = require("util");
 connection.query = util.promisify(connection.query);
 
 module.exports = {
-    getData(tableName) {
-        return connection.query("SELECT * FROM ??", [tableName]);
+    getData(table) {
+        return connection.query("SELECT * FROM ??", [table]);
+    },
+    deleteData(table, colName, colValue) {
+        return connection.query("DELETE FROM ?? WHERE ?? = ?", [table, colName, colValue]);
     },
     addEmployee(firstName, lastName, roleId, managerId) {
         return connection.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [firstName, lastName, roleId, managerId]);
+    },
+    updateEmployee(table, colOne, valOne, colTwo, valTwo) {
+        return connection.query("UPDATE ?? SET ?? = ? WHERE ?? = ?", [table, colOne, valOne, colTwo, valTwo]);
     },
     addRole(title, salary, deptId) {
         return connection.query("INSERT INTO roles (title, salary, dept_id) VALUES (?, ?, ?)", [title, salary, deptId]);
     },
     addDept(dept_name) {
         return connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name]);
-    },
-    deleteData(tableName, colName, colValue) {
-        return connection.query("DELETE FROM ?? WHERE ?? = ?", [tableName, colName, colValue]);
-    },
-    updateEmployee(table, colOne, valOne, colTwo, valTwo) {
-        return connection.query("UPDATE ?? SET ?? = ? WHERE ?? = ?", [table, colOne, valOne, colTwo, valTwo]);
     },
     viewEmployees() {
         let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', ";

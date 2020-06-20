@@ -63,7 +63,8 @@ module.exports = {
                 type: "list",
                 name: `${type}`,
                 message: `Which ${type} would you like to remove?`,
-                choices: list
+                choices: list,
+                suffix: `\nWARNING: This will also remove all associated roles and employees`
             }
         ])
     },
