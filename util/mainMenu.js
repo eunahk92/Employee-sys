@@ -5,6 +5,7 @@ module.exports = {
     choices: [
         "View All Employees",
         "View Employees By Department",
+        "View Employees By Manager",
         "Add A New Employee",
         "Update An Employee's Info",
         "Remove An Employee",

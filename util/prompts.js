@@ -68,13 +68,13 @@ module.exports = {
             }
         ])
     },
-    listDepartments(deptList) {
+    viewData(type, list) {
         return inquirer.prompt([
             {
                 type: "list",
-                name: "department",
-                message: "Which department would you like to see?",
-                choices: deptList
+                name: `${type}`,
+                message: `Which ${type} would you like to see?`,
+                choices: list,
             }
         ])
     },

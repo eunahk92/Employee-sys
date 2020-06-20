@@ -22,10 +22,19 @@ module.exports = {
     addDept(dept_name) {
         return connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name]);
     },
+    getManagers() {
+        let query = "SELECT m.id AS 'manager id', CONCAT(m.first_name, ' ', m.last_name) AS manager, "
+        query += "e.id AS 'id', CONCAT(e.first_name, ' ', e.last_name) AS employee, r.title ";
+        query += "FROM employees e INNER JOIN employees m ON m.id = e.manager_id "
+        query += "LEFT JOIN roles AS r ON e.role_id = r.id ORDER BY e.id ASC"
+        return connection.query(query);
+    },
     viewEmployees() {
-        let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', ";
-        query += "r.title AS role, d.dept_name AS department, r.salary AS salary ";
-        query += "FROM employees AS e LEFT JOIN roles AS r ON e.role_id = r.id ";
+        let query = "SELECT e.id AS 'emp. id', e.first_name AS 'first name', e.last_name AS 'last name', ";
+        query += "r.title AS role, d.dept_name AS department, ";
+        query += "CONCAT(m.first_name, ' ', m.last_name) AS manager, r.salary AS salary ";
+        query += "FROM employees AS e INNER JOIN employees m ON m.id = e.manager_id " 
+        query += "LEFT JOIN roles AS r ON e.role_id = r.id ";
         query += "LEFT JOIN departments AS d ON d.id = r.dept_id ";
         query += "ORDER BY e.id ASC";
         return connection.query(query).then(res => {
@@ -36,7 +45,7 @@ module.exports = {
         })
     },
     viewRoles() {
-        let query = "SELECT r.id AS id, r.title AS title, d.dept_name AS department, r.salary AS salary "
+        let query = "SELECT r.title AS title, d.dept_name AS department, r.salary AS salary "
         query += "FROM roles AS r LEFT JOIN departments AS d ON r.dept_id = d.id ";
         query += "ORDER BY r.id ASC";
         return connection.query(query).then(res => {
@@ -48,7 +57,6 @@ module.exports = {
     },
     viewDepartments() {
         let query = "SELECT d.id AS id, d.dept_name AS department "
-        // query += ", r.salary AS 'utilized budget' ";
         query += "FROM departments AS d LEFT JOIN roles AS r ON d.id = r.dept_id";
         return connection.query(query).then(res => {
             if (res.length === 0) {
@@ -58,9 +66,11 @@ module.exports = {
         })
     },
     viewEmployeesByDepartments(department) {
-        let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, r.salary AS salary, e.manager_id AS manager " 
-        query += "FROM employees AS e LEFT JOIN roles AS r ON r.id = e.role_id "
-        query += "LEFT JOIN departments AS d ON r.dept_id = d.id "
+        let query = "SELECT e.id AS 'employee id', e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, ";
+        query += "CONCAT(m.first_name, ' ', m.last_name) AS manager, r.salary AS salary ";
+        query += "FROM employees AS e INNER JOIN employees m ON m.id = e.manager_id " 
+        query += "LEFT JOIN roles AS r ON r.id = e.role_id ";
+        query += "LEFT JOIN departments AS d ON r.dept_id = d.id ";
         query += "WHERE dept_name = ?"
         return connection.query(query, [department]).then(res => {
             if (res.length === 0) {

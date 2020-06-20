@@ -4,16 +4,17 @@ const mainMenu = require("./util/mainMenu");
 const table = require("console.table");
 const queries = require("./util/queries");
 const prompts = require("./util/prompts");
+const connection = require("./util/connection");
 
-welcomeMsg = () => {
-    console.log(figlet.textSync(`Company\n\n\nDatabase`, {
-        font: 'Standard',
-        horizontalLayout: 'default',
-        verticalLayout: 'default'
-    }));
-}
+// welcomeMsg = () => {
+//     console.log(figlet.textSync(`Company\n\n\nDatabase`, {
+//         font: 'Standard',
+//         horizontalLayout: 'default',
+//         verticalLayout: 'default'
+//     }));
+// }
 
-welcomeMsg();
+// welcomeMsg();
 
 async function init() {
     try {
@@ -22,7 +23,9 @@ async function init() {
             case "View All Employees":
                 return viewData("employees");
             case "View Employees By Department":
-                return viewEmployeesByDept();
+                return viewEmpData("department");
+            case "View Employees By Manager":
+                return viewEmpData("manager");
             case "Add A New Employee":
                 return addNewEmployee();
             case "Update An Employee's Info":
@@ -43,7 +46,7 @@ async function init() {
                 return removeDept();
             default:
                 console.log("Goodbye.");
-                return;
+                connection.end();
         }
     } catch(err) { if (err) throw (err); }
 }
@@ -52,10 +55,10 @@ async function addNewEmployee() {
     try {
         let roles = await queries.getData("roles");
         let roleTitles = await getRoleTitles(roles);
-
         let employees = await queries.getData("employees");
         let employeeNames = await getEmployeeNames(employees);
         employeeNames.unshift("None");
+
         let answers = await prompts.addEmployee(roleTitles, employeeNames);
         let { first_name, last_name, role, manager } = answers;
         let matchedManagerID, matchedRoleID;
@@ -145,7 +148,7 @@ async function removeDept() {
         let answer = await prompts.removeData("department", departmentNames);
         let { department } = answer;
         let matchedDeptID = await filterDept(departments, department);
-
+        
         let result = await queries.deleteData("departments", "id", matchedDeptID);
         await console.log(`(${result.affectedRows}) department has been deleted.\n`);
         await init();
@@ -170,20 +173,32 @@ async function viewData(method) {
         init();
     } catch (err) { if (err) throw (err) }
 }
-
-async function viewEmployeesByDept() {
+async function viewEmpData(type) {
     try {
-        let departments = await queries.getData("departments");
-        let departmentNames = await getDeptNames(departments);
-        let { department } = await prompts.listDepartments(departmentNames);
-        await queries.viewEmployeesByDepartments(department);
-        await init();
+        switch (type) {
+            case ("department"):
+                let departments = await queries.getData("departments");
+                let departmentNames = await getDeptNames(departments);
+                let { department } = await prompts.viewData("department", departmentNames);
+                await queries.viewEmployeesByDepartments(department);
+                break;
+            case ("manager"):
+                let result = await queries.getManagers();
+                let managersArr = result.map(name => name.manager);
+                let { manager } = await prompts.viewData("manager", managersArr);
+                let newArr = result.filter(item => item.manager === manager);
+                newArr = newArr.map(info => ({'emp. id': info.id, name: info.employee, role: info.title}));
+                console.table(newArr);
+                break;
+        }
+        init();
     } catch (err) { if (err) throw (err) }
 }
 
+
 async function updateEmployee() {
     try {
-        let roles = await queries.getData("roles");
+        let roles = await queries.getManagers();
         let roleTitles = await getRoleTitles(roles);
         let employees = await queries.getData("employees");
         let employeeNames = await getEmployeeNames(employees);
