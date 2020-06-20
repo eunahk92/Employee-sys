@@ -56,5 +56,17 @@ module.exports = {
             }
             console.table(res);
         })
+    },
+    viewEmployeesByDepartments(department) {
+        let query = "SELECT e.id AS id, e.first_name AS 'first name', e.last_name AS 'last name', r.title AS role, r.salary AS salary, e.manager_id AS manager " 
+        query += "FROM employees AS e LEFT JOIN roles AS r ON r.id = e.role_id "
+        query += "LEFT JOIN departments AS d ON r.dept_id = d.id "
+        query += "WHERE dept_name = ?"
+        return connection.query(query, [department]).then(res => {
+            if (res.length === 0) {
+                console.log("No current departments. Please add a department.");
+            }
+            console.table(res);
+        })
     }
 }

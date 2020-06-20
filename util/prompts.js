@@ -68,6 +68,16 @@ module.exports = {
             }
         ])
     },
+    listDepartments(deptList) {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "department",
+                message: "Which department would you like to see?",
+                choices: deptList
+            }
+        ])
+    },
     updateData(list, employeeList) {
         return inquirer.prompt([
             {
