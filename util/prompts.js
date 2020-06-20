@@ -1,18 +1,19 @@
 const inquirer = require("inquirer");
 
-
 module.exports = {
     addEmployee(rolesTitle, employeeNames) {
         return inquirer.prompt([
             {
                 type: "input",
                 name: "first_name",
-                message: "What is the employee's first name?"
+                message: "What is the employee's first name?",
+                filter: changeCapitalization
             },
             {
                 type: "input",
                 name: "last_name",
-                message: "What is the employee's last name?"
+                message: "What is the employee's last name?",
+                filter: changeCapitalization
             },
             {
                 type: "list",
@@ -33,7 +34,8 @@ module.exports = {
             {
                 type: "input",
                 name: "title",
-                message: "What is the role?"
+                message: "What is the role?",
+                filter: changeCapitalization
             },
             {
                 type: "input",
@@ -53,7 +55,8 @@ module.exports = {
             {
                 type: "input",
                 name: "dept_name",
-                message: "What department would you like to add?"
+                message: "What department would you like to add?",
+                filter: changeCapitalization
             }
         ])
     },
@@ -108,4 +111,7 @@ module.exports = {
             }
         ])
     }
+}
+changeCapitalization = (input) => {
+    return input.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
