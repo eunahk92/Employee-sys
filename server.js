@@ -173,6 +173,7 @@ async function viewData(method) {
         init();
     } catch (err) { if (err) throw (err) }
 }
+
 async function viewEmpData(type) {
     try {
         switch (type) {
@@ -184,6 +185,10 @@ async function viewEmpData(type) {
                 break;
             case ("manager"):
                 let result = await queries.getManagers();
+                if (result.length === 0) {
+                    console.log("No managers are currently in your company.");
+                    break;
+                }
                 let managersArr = result.map(name => name.manager);
                 let { manager } = await prompts.viewData("manager", managersArr);
                 let newArr = result.filter(item => item.manager === manager);
@@ -198,7 +203,7 @@ async function viewEmpData(type) {
 
 async function updateEmployee() {
     try {
-        let roles = await queries.getManagers();
+        let roles = await queries.getData("roles");
         let roleTitles = await getRoleTitles(roles);
         let employees = await queries.getData("employees");
         let employeeNames = await getEmployeeNames(employees);
