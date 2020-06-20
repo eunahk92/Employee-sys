@@ -23,16 +23,16 @@ Run the SERVER.JS file using NODE from the command line and choose the action de
 
 With this application, it will allow the user to do various actions:
 
-##### View all departments, roles, employees; view employees by manager; or employees by department:
+* View all departments, roles, employees; view employees by manager; or employees by department.
 ![](assets/view_data.gif)
 
-##### Add departments, roles, employees:
+* Add departments, roles, employees.
 ![](assets/add_data.gif)
 
-##### Delete departments, roles, and employees:
+* Delete departments, roles, and employees.
 ![](assets/remove_data.gif)
 
-##### Update employee's role or manager:
+* Update employee's role or manager.
 ![](assets/update_data.gif)
 
 
