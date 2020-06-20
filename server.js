@@ -6,15 +6,15 @@ const queries = require("./util/queries");
 const prompts = require("./util/prompts");
 const connection = require("./util/connection");
 
-// welcomeMsg = () => {
-//     console.log(figlet.textSync(`Company\n\n\nDatabase`, {
-//         font: 'Standard',
-//         horizontalLayout: 'default',
-//         verticalLayout: 'default'
-//     }));
-// }
+welcomeMsg = () => {
+    console.log(figlet.textSync(`Company\n\n\nDatabase`, {
+        font: 'Standard',
+        horizontalLayout: 'default',
+        verticalLayout: 'default'
+    }));
+}
 
-// welcomeMsg();
+welcomeMsg();
 
 async function init() {
     try {
