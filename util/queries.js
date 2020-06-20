@@ -33,7 +33,7 @@ module.exports = {
         let query = "SELECT e.id AS 'emp. id', e.first_name AS 'first name', e.last_name AS 'last name', ";
         query += "r.title AS role, d.dept_name AS department, ";
         query += "CONCAT(m.first_name, ' ', m.last_name) AS manager, r.salary AS salary ";
-        query += "FROM employees AS e INNER JOIN employees m ON m.id = e.manager_id " 
+        query += "FROM employees AS e LEFT JOIN employees m ON m.id = e.manager_id " 
         query += "LEFT JOIN roles AS r ON e.role_id = r.id ";
         query += "LEFT JOIN departments AS d ON d.id = r.dept_id ";
         query += "ORDER BY e.id ASC";
@@ -45,9 +45,8 @@ module.exports = {
         })
     },
     viewRoles() {
-        let query = "SELECT r.title AS title, d.dept_name AS department, r.salary AS salary "
-        query += "FROM roles AS r LEFT JOIN departments AS d ON r.dept_id = d.id ";
-        query += "ORDER BY r.id ASC";
+        let query = "SELECT r.id AS id, r.title AS title, d.dept_name AS department, r.salary AS salary "
+        query += "FROM roles AS r LEFT JOIN departments AS d ON r.dept_id = d.id";
         return connection.query(query).then(res => {
             if (res.length === 0) {
                 console.log("No current roles. Please add a role.");
@@ -56,8 +55,7 @@ module.exports = {
         })
     },
     viewDepartments() {
-        let query = "SELECT d.id AS id, d.dept_name AS department "
-        query += "FROM departments AS d LEFT JOIN roles AS r ON d.id = r.dept_id";
+        let query = "SELECT d.id AS id, d.dept_name AS department FROM departments as d";
         return connection.query(query).then(res => {
             if (res.length === 0) {
                 console.log("No current departments. Please add a department.");
