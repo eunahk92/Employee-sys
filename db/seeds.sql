@@ -27,7 +27,7 @@ VALUES
     
 INSERT INTO employees (first_name, last_name, role_id)
 VALUES
-	("Peter", "Pan", 1),
-	("Spongebob", "Squarepants", 2),
-	("Heromine", "Granger", 3),
-	("Cardi", "B", 4);
+	("Peter", "Pan", 5),
+	("Spongebob", "Squarepants", 6),
+	("Heromine", "Granger", 7),
+	("Cardi", "B", 8);
