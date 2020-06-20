@@ -10,19 +10,19 @@ INSERT INTO departments (dept_name)
 VALUES ("Marketing");
 
 INSERT INTO roles (title, salary, dept_id)
-VALUES ("Software Engineer", 100000, 1);
+VALUES ("Software Engineer", 90000, 1);
 
 INSERT INTO roles (title, salary, dept_id)
-VALUES ("Payroll Specialist", 70000, 2);
+VALUES ("Admin", 50000, 2);
 
 INSERT INTO roles (title, salary, dept_id)
-VALUES ("PR", 70000, 3);
+VALUES ("PR", 60000, 3);
 
-INSERT INTO employees (first_name, last_name, role_id)
-VALUES ("Chester", "Kim", 2);
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
+VALUES ("Chester", "Kim", 2, 1);
 
-INSERT INTO employees (first_name, last_name, role_id)
-VALUES ("Yoshi", "Nguyen", 1);
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
+VALUES ("Yoshi", "Nguyen", 1, 3);
 
 INSERT INTO employees (first_name, last_name, role_id)
 VALUES ("Harry", "Potter", 3);
