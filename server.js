@@ -1,10 +1,10 @@
 const inquirer = require("inquirer");
 const figlet = require("figlet");
 const table = require("console.table");
-const mainMenu = require("./util/mainMenu");
-const queries = require("./util/queries");
-const prompts = require("./util/prompts");
-const connection = require("./util/connection");
+const mainMenu = require("./controller/mainMenu");
+const queries = require("./config/queries");
+const prompts = require("./controller/prompts");
+const connection = require("./config/connection");
 
 let roles, roleTitles, employees, employeeNames, departments, departmentNames;
 

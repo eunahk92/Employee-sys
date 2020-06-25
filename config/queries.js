@@ -1,15 +1,11 @@
-const connection = require("./connection");
+const connection = require("../config/connection");
 const util = require("util");
 
 connection.query = util.promisify(connection.query);
 
 module.exports = {
-    getData(table) {
-        return connection.query("SELECT * FROM ??", [table]);
-    },
-    deleteData(table, colName, colValue) {
-        return connection.query("DELETE FROM ?? WHERE ?? = ?", [table, colName, colValue]);
-    },
+    getData: table => connection.query("SELECT * FROM ??", [table]),
+    deleteData: (table, colName, colValue) => connection.query("DELETE FROM ?? WHERE ?? = ?", [table, colName, colValue]),
     addEmployee(firstName, lastName, roleId, managerId) {
         return connection.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [firstName, lastName, roleId, managerId]);
     },
@@ -19,9 +15,7 @@ module.exports = {
     addRole(title, salary, deptId) {
         return connection.query("INSERT INTO roles (title, salary, dept_id) VALUES (?, ?, ?)", [title, salary, deptId]);
     },
-    addDept(dept_name) {
-        return connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name]);
-    },
+    addDept: dept_name => connection.query("INSERT INTO departments (dept_name) VALUES (?)", [dept_name]),
     getManagers() {
         let query = "SELECT m.id AS 'manager id', CONCAT(m.first_name, ' ', m.last_name) AS manager, "
         query += "e.id AS 'id', CONCAT(e.first_name, ' ', e.last_name) AS employee, r.title ";
